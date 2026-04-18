@@ -4,7 +4,7 @@
 
 - Course Assignment: Software Testing Project
 - Instructor: Prof. Hyrmet Mydyti, PhD
-- Academic Year: 2024/2025
+- Academic Year: 2025/2026
 
 ## Project Objective
 
