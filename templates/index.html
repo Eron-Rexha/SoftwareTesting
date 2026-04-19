@@ -77,11 +77,11 @@
             const token = getAccessToken();
 
             if (includeJson) {
-                headers["Content-Type"] = "application/json";
+                headers['Content-Type'] = 'application/json';
             }
 
             if (token) {
-                headers["Authorization"] = `Bearer ${token}`;
+                headers['Authorization'] = `Bearer ${token}`;
             }
 
             return headers;
@@ -89,8 +89,7 @@
 
         function updateAuthUi() {
             const token = getAccessToken();
-            const status = document.getElementById("statusIndicator");
-
+            const status = document.getElementById('statusIndicator');
             if (token) {
                 status.innerHTML = `
                     <span class="relative flex h-2 w-2 mr-2">
@@ -111,13 +110,13 @@
             }
         }
 
+        // --- 1. Load Jobs from Backend ---
         async function loadJobs() {
             try {
-                const res = await fetch("/jobs");
+                const res = await fetch('/jobs');
                 const jobs = await res.json();
-                const container = document.getElementById("jobList");
-                const isLoggedIn = !!getAccessToken();
-
+                const container = document.getElementById('jobList');
+                
                 if (jobs.length === 0) {
                     container.innerHTML = '<p class="text-gray-400 italic">No job openings yet.</p>';
                     return;
@@ -125,69 +124,39 @@
 
                 container.innerHTML = jobs.map(job => `
                     <div class="bg-white border border-gray-100 p-6 rounded-2xl hover:shadow-md transition">
-                        <div class="flex justify-between items-start gap-4">
+                        <div class="flex justify-between items-start">
                             <div>
                                 <h3 class="text-xl font-bold">${job.title}</h3>
-                                <p class="text-sm text-gray-500">${job.location} - ${job.salary}</p>
+                                <p class="text-sm text-gray-500">${job.location} • ${job.salary}</p>
                             </div>
-                            <div class="flex items-center gap-2">
-                                <button onclick="openApplyModal(${job.id}, '${job.title.replace(/'/g, "\\'")}')" class="bg-gray-100 text-black px-4 py-2 rounded-lg text-xs font-bold hover:bg-black hover:text-white transition">Apply Now</button>
-                                ${isLoggedIn ? `<button onclick="deleteJob(${job.id})" class="bg-red-50 text-red-600 px-4 py-2 rounded-lg text-xs font-bold hover:bg-red-600 hover:text-white transition">Remove</button>` : ""}
-                            </div>
+                            <button onclick="openApplyModal(${job.id}, '${job.title}')" class="bg-gray-100 text-black px-4 py-2 rounded-lg text-xs font-bold hover:bg-black hover:text-white transition">Apply Now</button>
                         </div>
                     </div>
-                `).join("");
+                `).join('');
             } catch (err) {
                 console.error("Failed to load jobs:", err);
             }
         }
 
-        async function deleteJob(jobId) {
-            if (!getAccessToken()) {
-                alert("Please log in before removing a job.");
-                return;
-            }
-
-            if (!confirm("Remove this job from the page?")) {
-                return;
-            }
-
-            const response = await fetch(`/jobs/${jobId}`, {
-                method: "DELETE",
-                headers: getAuthHeaders()
-            });
-
-            if (response.ok) {
-                loadJobs();
-                return;
-            }
-
-            const errorData = await response.json().catch(() => ({}));
-            if (response.status === 401) {
-                alert("Please log in before removing a job.");
-            } else {
-                alert("Could not remove job: " + (errorData.detail || "Unknown error"));
-            }
-        }
-
-        document.getElementById("jobForm").addEventListener("submit", async (e) => {
+        // --- 2. Post a New Job ---
+        document.getElementById('jobForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const data = {
-                title: document.getElementById("title").value,
-                location: document.getElementById("location").value,
-                salary: document.getElementById("salary").value,
-                description: document.getElementById("description").value,
-                requirements: document.getElementById("requirements").value,
+                title: document.getElementById('title').value,
+                location: document.getElementById('location').value,
+                salary: document.getElementById('salary').value,
+                description: document.getElementById('description').value,
+                requirements: document.getElementById('requirements').value,
                 is_active: 1
             };
-
-            const res = await fetch("/jobs", {
-                method: "POST",
+            
+            const res = await fetch('/jobs', {
+                method: 'POST',
                 headers: getAuthHeaders(true),
                 body: JSON.stringify(data)
             });
 
-            if (res.ok) {
+            if(res.ok) {
                 e.target.reset();
                 loadJobs();
             } else {
@@ -200,20 +169,22 @@
             }
         });
 
+        // --- 3. Modal Control Functions ---
         function openApplyModal(id, title) {
-            currentJobId = id;
-            document.getElementById("modalJobTitle").innerText = title;
-            document.getElementById("applyModal").classList.remove("hidden");
+            currentJobId = id; // Links the application to the correct job
+            document.getElementById('modalJobTitle').innerText = title;
+            document.getElementById('applyModal').classList.remove('hidden');
         }
 
         function closeModal() {
-            document.getElementById("applyModal").classList.add("hidden");
-            document.getElementById("coverLetter").value = "";
+            document.getElementById('applyModal').classList.add('hidden');
+            document.getElementById('coverLetter').value = ""; // Reset for next use
         }
 
+        // --- 4. Submit Application ---
         async function submitApplication() {
-            const coverLetterText = document.getElementById("coverLetter").value;
-
+            const coverLetterText = document.getElementById('coverLetter').value;
+            
             if (!coverLetterText) {
                 alert("Please write a cover letter.");
                 return;
@@ -226,27 +197,29 @@
 
             try {
                 const response = await fetch(`/jobs/${currentJobId}/apply`, {
-                    method: "POST",
+                    method: 'POST',
                     headers: getAuthHeaders(true),
-                    body: JSON.stringify({
-                        cover_letter: coverLetterText
+                    body: JSON.stringify({ 
+                        cover_letter: coverLetterText 
                     })
                 });
 
                 if (response.ok) {
-                    alert("Application sent successfully!");
+                    alert('Application sent successfully!');
                     closeModal();
                 } else {
                     const errorData = await response.json();
-                    alert("Failed: " + JSON.stringify(errorData.detail));
+                    alert('Failed: ' + JSON.stringify(errorData.detail));
                 }
             } catch (error) {
                 alert("Connection error.");
             }
         }
 
-        document.getElementById("submitAppBtn").addEventListener("click", submitApplication);
-
+        // --- Event Listeners & Init ---
+        document.getElementById('submitAppBtn').addEventListener('click', submitApplication);
+        
+        // Initial load
         updateAuthUi();
         loadJobs();
     </script>

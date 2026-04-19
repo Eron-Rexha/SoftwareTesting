@@ -57,19 +57,6 @@ async def create_job(
     db.refresh(new_job)
     return new_job
 
-@router.delete("/jobs/{job_id}", status_code=204)
-async def delete_job(
-    job_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    job = db.get(Job, job_id)
-    if not job:
-        raise HTTPException(status_code=404, detail="Job not found")
-
-    job.is_active = 0
-    db.commit()
-
 @router.post("/jobs/{job_id}/apply", response_model=ApplicationResponse, status_code=201)
 async def apply_to_job(
     job_id: int,

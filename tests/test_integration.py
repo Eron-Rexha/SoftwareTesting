@@ -145,29 +145,3 @@ def test_apply_with_invalid_payload_returns_422(client):
     )
 
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
-
-def test_delete_job_removes_it_from_job_list(client):
-    _, employer_token = register_and_login(client, "owner@test.com", "owner_user")
-    job_response = client.post(
-        "/jobs",
-        headers={"Authorization": f"Bearer {employer_token}"},
-        json={
-            "title": "Frontend QA",
-            "description": "Own the UI tests",
-            "requirements": "HTML and JS",
-            "location": "Remote",
-            "salary": "70k",
-        },
-    )
-    job_id = job_response.json()["id"]
-
-    _, other_user_token = register_and_login(client, "other@test.com", "other_user")
-    delete_response = client.delete(
-        f"/jobs/{job_id}",
-        headers={"Authorization": f"Bearer {other_user_token}"},
-    )
-    assert delete_response.status_code == status.HTTP_204_NO_CONTENT
-
-    jobs_response = client.get("/jobs")
-    assert jobs_response.status_code == status.HTTP_200_OK
-    assert all(job["id"] != job_id for job in jobs_response.json())
