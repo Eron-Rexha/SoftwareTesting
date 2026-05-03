@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.pool import StaticPool
 from sqlalchemy.orm import declarative_base
 
-# Configuration from Claude code
+
 DATABASE_URL = "sqlite:///./job_board.db"
 engine = create_engine(
     DATABASE_URL, 
